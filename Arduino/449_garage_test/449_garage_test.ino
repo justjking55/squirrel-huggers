@@ -8,7 +8,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   int rawReading = analogRead(A1);
-  float volts = rawReading * (150.0/1023.0);
+  float volts = rawReading * (5000.0/1023.0);
   Serial.println(volts);
 //  Serial.println(" ");
 
