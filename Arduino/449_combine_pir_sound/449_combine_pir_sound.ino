@@ -15,6 +15,13 @@ bool garagePOS = false;
 int LEN_WINDOW = 20;
 int count = 0;
 int pirPeaks[20];
+
+// Pin where the relay is connected
+const int relayPin = 7;
+
+// Time intervals in milliseconds
+const unsigned long interval = 3000; // 5 seconds
+
   
 void setup() {
   Serial.begin(9600);                            // set the data rate for the Serial communication
@@ -25,9 +32,10 @@ void setup() {
   
   pinMode(A0, INPUT);                            // analog pin used to connect the sensor
   tmrpcm.speakerPin = 9; //5,6,11 or 46 on Mega, 9 on Uno, Nano, etc
-
   pinMode(A1, INPUT); //garage door sensor pin
+  pinMode(relayPin, OUTPUT); // Initialize the relay pin as an output
 
+  digitalWrite(relayPin, LOW); // Set relay to LOW initially to keep it off
   tmrpcm.setVolume(4);
   peakDetection.begin(48, 2, 0.6);               // sets the lag, threshold and influence
   
@@ -35,8 +43,6 @@ void setup() {
     pirPeaks[i] = 0;
   }
 
-//  tmrpcm.play("dog1.WAV"); //the sound file will play each time the arduino powers up, or is reset
-//  Serial.println("music");
 }
 
 void loop() {
@@ -84,11 +90,21 @@ void loop() {
           if(listSum(pirPeaks,LEN_WINDOW) >= LEN_WINDOW * 0.3) {
             //ALL DETERRENCE TRIGGERS HERE
             readyToDetect = false;
+            
+            //start speaker
             tmrpcm.setVolume(4);
             tmrpcm.play("dog1.WAV");
             Serial.println("music");
-            delay(5000);
+            
+            digitalWrite(relayPin, HIGH);
+            delay(100); // Flash duration (adjust if needed)
+            digitalWrite(relayPin, LOW); // Turn off the relay
+            delay(4900); //4900 + 100 = roughly 5 seconds of music
             tmrpcm.pause();
+
+            triggerScarecrow(); //motion deterrence
+
+            //resetting pirPeaks list
             for (int i = 0; i < LEN_WINDOW; i++) {
               pirPeaks[i] = 0;
             }
@@ -97,8 +113,7 @@ void loop() {
         }
 
         garagePOS = false;
-
-        
+  
       }
   
     }
