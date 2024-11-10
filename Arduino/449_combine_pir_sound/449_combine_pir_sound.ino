@@ -106,7 +106,7 @@ void loop() {
           if(listSum(pirPeaks,LEN_WINDOW) >= LEN_WINDOW * 0.3) {
             //ALL DETERRENCE TRIGGERS HERE
             readyToDetect = false;
-            
+            Serial.println("TEST");
             //start speaker
             tmrpcm.setVolume(4);
             tmrpcm.play("dog1.WAV");
