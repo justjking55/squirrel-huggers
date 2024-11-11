@@ -12,18 +12,20 @@ bool readyToDetect = true;
 bool pirPOS = false;
 bool garagePOS = false;
 const int LEN_WINDOW = 20;
-const int LEN_GARAGE = 15;
+const int LEN_GARAGE = 40;
 int count = 0;
+int zeroCount = 0;
 int pirPeaks[LEN_WINDOW];
 float garageAvg[LEN_GARAGE];
+float lastMVolts = -1.0;
 
 const int relayPin = 7;
 const unsigned long interval = 3000;
 unsigned long startPIR = millis();
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println(F("hello"));
+  Serial.begin(19200);
+//  Serial.println(F("hello"));
 
   pinMode(PIR, INPUT);
   pinMode(GARAGE_PIN, INPUT);
@@ -31,7 +33,7 @@ void setup() {
   digitalWrite(TriggerOut, LOW);
 
   peakDetection.begin(48, 2, 0.6);
-  Serial.println(F("hilo"));
+//  Serial.println(F("hilo"));
   
   for (int i = 0; i < LEN_WINDOW; i++) {
     pirPeaks[i] = 0;
@@ -39,6 +41,7 @@ void setup() {
   for (int i = 0; i < LEN_GARAGE; i++) {
     garageAvg[i] = 100;
   }
+  
 }
 
 void loop() {
@@ -48,10 +51,33 @@ void loop() {
     int rawGarage = analogRead(GARAGE_PIN);
     float mVolts = rawGarage * (5.0 / 1023.0) * 1000.0;
     int garInd = count % LEN_GARAGE;
-    garageAvg[garInd] = mVolts;
 
-    if ((listSumDouble(garageAvg, LEN_GARAGE) / LEN_GARAGE) < 1.0) {
+    if(lastMVolts == 0.00) {
+      if(mVolts == 0.00) {
+        zeroCount++;
+      }
+      else {
+        zeroCount = 0;
+      }
+    }
+    else {
+      if(mVolts == 0.00) {
+        zeroCount = 1;
+      }
+    }
+    lastMVolts = mVolts;
+    garageAvg[garInd] = mVolts;
+    
+//    Serial.println(listSumDouble(garageAvg, LEN_GARAGE)/LEN_GARAGE);
+
+//    if ((listSumDouble(garageAvg, LEN_GARAGE) / LEN_GARAGE) < 1.0) {
+//      garagePOS = true;
+//    } else {
+//      garagePOS = false;
+//    }
+    if (zeroCount > 50) {
       garagePOS = true;
+      zeroCount = 0;
     } else {
       garagePOS = false;
     }
@@ -60,7 +86,7 @@ void loop() {
       Serial.println(F("Garage door is broken"));
       startPIR = millis();
 
-      while (millis() - startPIR < 5000) {
+      while (millis() - startPIR < 2000) {
         count++;
         int arrInd = count % LEN_WINDOW;
 
@@ -68,8 +94,11 @@ void loop() {
         peakDetection.add(data);
         int peak = peakDetection.getPeak();
         pirPeaks[arrInd] = (peak == 1) ? abs(peak) : 0;
+//        Serial.println(peak);
+//        Serial.println(peakDetection.getFilt());
+//        Serial.println((listSum(pirPeaks, LEN_WINDOW)));
 
-        if (listSum(pirPeaks, LEN_WINDOW) >= LEN_WINDOW * 0.3) {
+        if (listSum(pirPeaks, LEN_WINDOW) >= LEN_WINDOW * 0.8) {
           readyToDetect = false;
           digitalWrite(TriggerOut, HIGH);
           Serial.println(F("TRIGGERING"));
