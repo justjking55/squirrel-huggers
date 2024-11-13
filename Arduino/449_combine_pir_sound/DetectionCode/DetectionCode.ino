@@ -16,15 +16,18 @@ const int LEN_GARAGE = 40;
 int count = 0;
 int zeroCount = 0;
 int pirPeaks[LEN_WINDOW];
-float garageAvg[LEN_GARAGE];
+//float garageAvg[LEN_GARAGE];
 float lastMVolts = -1.0;
+
+float PIR_SENSITIVITY_PERC = 0.5;
+int GARAGE_THRESH = 50;
 
 const int relayPin = 7;
 const unsigned long interval = 3000;
 unsigned long startPIR = millis();
 
 void setup() {
-  Serial.begin(19200);
+  Serial.begin(9600);
 //  Serial.println(F("hello"));
 
   pinMode(PIR, INPUT);
@@ -38,9 +41,9 @@ void setup() {
   for (int i = 0; i < LEN_WINDOW; i++) {
     pirPeaks[i] = 0;
   }
-  for (int i = 0; i < LEN_GARAGE; i++) {
-    garageAvg[i] = 100;
-  }
+//  for (int i = 0; i < LEN_GARAGE; i++) {
+//    garageAvg[i] = 100;
+//  }
   
 }
 
@@ -66,7 +69,7 @@ void loop() {
       }
     }
     lastMVolts = mVolts;
-    garageAvg[garInd] = mVolts;
+//    garageAvg[garInd] = mVolts;
     
 //    Serial.println(listSumDouble(garageAvg, LEN_GARAGE)/LEN_GARAGE);
 
@@ -75,7 +78,7 @@ void loop() {
 //    } else {
 //      garagePOS = false;
 //    }
-    if (zeroCount > 50) {
+    if (zeroCount > GARAGE_THRESH) {
       garagePOS = true;
       zeroCount = 0;
     } else {
@@ -98,20 +101,21 @@ void loop() {
 //        Serial.println(peakDetection.getFilt());
 //        Serial.println((listSum(pirPeaks, LEN_WINDOW)));
 
-        if (listSum(pirPeaks, LEN_WINDOW) >= LEN_WINDOW * 0.8) {
+        if (listSum(pirPeaks, LEN_WINDOW) >= LEN_WINDOW * PIR_SENSITIVITY_PERC) {
           readyToDetect = false;
           digitalWrite(TriggerOut, HIGH);
           Serial.println(F("TRIGGERING"));
-          delay(100);
+          delay(500);
           digitalWrite(TriggerOut, LOW);
 
           for (int i = 0; i < LEN_WINDOW; i++) {
             pirPeaks[i] = 0;
           }
-          for (int i = 0; i < LEN_GARAGE; i++) {
-            garageAvg[i] = 100;
-          }
+//          for (int i = 0; i < LEN_GARAGE; i++) {
+//            garageAvg[i] = 100;
+//          }
           readyToDetect = true;
+          startPIR = startPIR - 2000;
         }
       }
 
