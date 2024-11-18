@@ -40,7 +40,7 @@ void setup() {
   digitalWrite(flashPin, LOW);                   // Keep relay off initially
   digitalWrite(sPinUp, LOW);
   digitalWrite(sPinDown, LOW);
-  digitalWrite(mutePin, LOW);
+  digitalWrite(mutePin, HIGH);
 
   Serial.println(F("Setup Complete"));
 }
@@ -68,7 +68,7 @@ void loop() {
   if (digitalRead(triggerPin) == HIGH) {
     Serial.println(F("Trigger detected"));
 
-    digitalWrite(mutePin, HIGH);
+    digitalWrite(mutePin, LOW);
     // Activate scarecrow and play sound 
     digitalWrite(flashPin, HIGH);                // Flash trigger
     digitalWrite(sPinUp, HIGH);
@@ -80,7 +80,7 @@ void loop() {
     digitalWrite(sPinDown, HIGH);
     delay(1500);
     digitalWrite(sPinDown, LOW);
-    digitalWrite(mutePin, LOW);
+    digitalWrite(mutePin, HIGH);
 
     tmrpcm.pause();                              // Pause audio after playback
     Serial.println(F("Deterrence Triggered"));

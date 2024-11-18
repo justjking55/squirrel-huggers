@@ -8,6 +8,7 @@
 #define PIR_2 A2
 #define PIR_3 A4
 #define TriggerOut 4
+#define CameraOut 5
 
 PeakDetection peakDetection;
 PeakDetection garage;
@@ -41,7 +42,9 @@ void setup() {
   pinMode(PIR_3, INPUT);
   pinMode(GARAGE_PIN_3, INPUT);
   pinMode(TriggerOut, OUTPUT);
+  pinMode(CameraOut, OUTPUT);
   digitalWrite(TriggerOut, LOW);
+  digitalWrite(CameraOut, LOW);
 
   peakDetection.begin(48, 2, 0.6);
 //  Serial.println(F("hilo"));
@@ -63,7 +66,7 @@ void loop() {
     int rawG2 = analogRead(GARAGE_PIN_2);
     int rawG3 = analogRead(GARAGE_PIN_3);
     int max12 = max(rawG1, rawG2);
-    int rawGarage = max(max12, rawG3)
+    int rawGarage = max(max12, rawG3);
     float mVolts = rawGarage * (5.0 / 1023.0) * 1000.0;
     int garInd = count % LEN_GARAGE;
 
@@ -116,9 +119,13 @@ void loop() {
         if (listSum(pirPeaks, LEN_WINDOW) >= LEN_WINDOW * PIR_SENSITIVITY_PERC) {
           readyToDetect = false;
           digitalWrite(TriggerOut, HIGH);
+          digitalWrite(CameraOut, HIGH);
           Serial.println(F("TRIGGERING"));
           delay(500);
           digitalWrite(TriggerOut, LOW);
+          digitalWrite(CameraOut, LOW);
+
+          delay(10000);
 
           for (int i = 0; i < LEN_WINDOW; i++) {
             pirPeaks[i] = 0;
