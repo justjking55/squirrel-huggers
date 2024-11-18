@@ -7,6 +7,7 @@
 #define triggerPin 8       // Input pin for triggering the relay and audio
 #define chargePin 3         // Output pin for the charge relay
 #define flashPin 2 
+#define mutePin 7
 #define sPinUp 6            // Output pin for scarecrow spooling up
 #define sPinDown 5          // Output pin for scarecrow spooling down
 
@@ -34,11 +35,12 @@ void setup() {
   pinMode(flashPin, OUTPUT);                     // Set flash relay pin as output
   pinMode(sPinUp, OUTPUT);
   pinMode(sPinDown, OUTPUT);
-
+  pinMode(mutePin, OUTPUT);
   digitalWrite(chargePin, LOW);                  // Keep relay off initially
   digitalWrite(flashPin, LOW);                   // Keep relay off initially
   digitalWrite(sPinUp, LOW);
   digitalWrite(sPinDown, LOW);
+  digitalWrite(mutePin, LOW);
 
   Serial.println(F("Setup Complete"));
 }
@@ -66,6 +68,7 @@ void loop() {
   if (digitalRead(triggerPin) == HIGH) {
     Serial.println(F("Trigger detected"));
 
+    digitalWrite(mutePin, HIGH);
     // Activate scarecrow and play sound 
     digitalWrite(flashPin, HIGH);                // Flash trigger
     digitalWrite(sPinUp, HIGH);
@@ -77,6 +80,7 @@ void loop() {
     digitalWrite(sPinDown, HIGH);
     delay(1500);
     digitalWrite(sPinDown, LOW);
+    digitalWrite(mutePin, LOW);
 
     tmrpcm.pause();                              // Pause audio after playback
     Serial.println(F("Deterrence Triggered"));

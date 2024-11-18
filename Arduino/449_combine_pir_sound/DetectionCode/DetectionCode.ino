@@ -1,8 +1,12 @@
 #include <PeakDetection.h>
 #include <TMRpcm.h>
 #include <SPI.h>
-#define GARAGE_PIN A1
-#define PIR A0
+#define GARAGE_PIN_1 A1
+#define GARAGE_PIN_2 A3
+#define GARAGE_PIN_3 A5
+#define PIR_1 A0
+#define PIR_2 A2
+#define PIR_3 A4
 #define TriggerOut 4
 
 PeakDetection peakDetection;
@@ -30,8 +34,12 @@ void setup() {
   Serial.begin(9600);
 //  Serial.println(F("hello"));
 
-  pinMode(PIR, INPUT);
-  pinMode(GARAGE_PIN, INPUT);
+  pinMode(PIR_1, INPUT);
+  pinMode(GARAGE_PIN_1, INPUT);
+  pinMode(PIR_2, INPUT);
+  pinMode(GARAGE_PIN_2, INPUT);
+  pinMode(PIR_3, INPUT);
+  pinMode(GARAGE_PIN_3, INPUT);
   pinMode(TriggerOut, OUTPUT);
   digitalWrite(TriggerOut, LOW);
 
@@ -51,7 +59,11 @@ void loop() {
   count++;
 
   if (readyToDetect) {
-    int rawGarage = analogRead(GARAGE_PIN);
+    int rawG1 = analogRead(GARAGE_PIN_1);
+    int rawG2 = analogRead(GARAGE_PIN_2);
+    int rawG3 = analogRead(GARAGE_PIN_3);
+    int max12 = max(rawG1, rawG2);
+    int rawGarage = max(max12, rawG3)
     float mVolts = rawGarage * (5.0 / 1023.0) * 1000.0;
     int garInd = count % LEN_GARAGE;
 
@@ -93,7 +105,7 @@ void loop() {
         count++;
         int arrInd = count % LEN_WINDOW;
 
-        double data = (double)analogRead(PIR) / 512 - 1;
+        double data = (double)analogRead(PIR_1) / 512 - 1;
         peakDetection.add(data);
         int peak = peakDetection.getPeak();
         pirPeaks[arrInd] = (peak == 1) ? abs(peak) : 0;
